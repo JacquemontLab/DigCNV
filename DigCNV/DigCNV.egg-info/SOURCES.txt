@@ -1,0 +1,15 @@
+LICENCE
+MANIFEST.in
+README.md
+pyproject.toml
+DigCNV/DigCNV.egg-info/PKG-INFO
+DigCNV/DigCNV.egg-info/SOURCES.txt
+DigCNV/DigCNV.egg-info/dependency_links.txt
+DigCNV/DigCNV.egg-info/requires.txt
+DigCNV/DigCNV.egg-info/top_level.txt
+data/Region_centromere_hg19.dat
+data/SegDup_filtres_Ok_Oct.map
+data/UKBB_PFB.pfb
+data/UKBB_clean_for_DigCNV.tsv
+data/callrates.tsv
+data/example_cnvs.tsv

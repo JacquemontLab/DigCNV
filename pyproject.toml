@@ -1,0 +1,36 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "DigCNV"
+version = "0.1.2"
+description = "DigCNV library: Discriminates true from false CNVs called by at least two algorithm (QuantiSNP and PennCNV)"
+readme = "README.md"
+authors = [{ name = "Thomas Renne", email = "thomas.renne@umontreal.ca" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: GPL v3 License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["cnv", "quality control", "machine learning"]
+dependencies = [
+    'pandas',
+    'imblearn',
+    'sklearn',
+    'matplotlib',
+    'seaborn'
+]
+requires-python = ">=3.10.4"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/labjacquemont/DigCNV"
+
+
+
+[tool.setuptools.packages.find]
+where = ["DigCNV"]

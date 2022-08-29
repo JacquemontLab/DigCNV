@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import time
 import pandas as pd
 
-from DigCNVlib import digCNV_logger
+from DigCNV import digCNV_logger
 
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import GridSearchCV, HalvingGridSearchCV

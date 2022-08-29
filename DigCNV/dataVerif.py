@@ -1,4 +1,4 @@
-from DigCNVlib import digCNV_logger
+from DigCNV import digCNV_logger
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd

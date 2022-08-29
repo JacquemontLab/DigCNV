@@ -1,4 +1,4 @@
-from DigCNVlib import digCNV_logger
+from DigCNV import digCNV_logger
 import pandas as pd
 import numpy as np
 from os.path import exists
