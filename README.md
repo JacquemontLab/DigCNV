@@ -8,7 +8,7 @@ Thus we developped a algorithm analysing multiples CNVs features to remove these
 
 | **START** | **STOP** | **CHR** | **SNP** | **SCORE** | **TwoAlgs** | **LRR_mean** | **WF** | **** | **** |
 |-----------|----------|---------|---------|-----------|-------------|--------------|--------|------|------|
-| int       | int      | int     | int     | float     | int         | float        | float  |      |      |
+| int       | int      | str     | int     | float     | int         | float        | float  |      |      |
 |           |          |         |         |           |             |              |        |      |      |
 |           |          |         |         |           |             |              |        |      |      |
 |           |          |         |         |           |             |              |        |      |      |

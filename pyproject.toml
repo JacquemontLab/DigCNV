@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [{ name = "Thomas Renne", email = "thomas.renne@umontreal.ca" }]
 license = { file = "LICENSE" }
 classifiers = [
-    "License :: OSI Approved :: GPL v3 License",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
@@ -29,8 +29,6 @@ dev = ["pytest"]
 
 [project.urls]
 Homepage = "https://github.com/labjacquemont/DigCNV"
-
-
 
 [tool.setuptools.packages.find]
 where = ["DigCNV"]

@@ -34,10 +34,10 @@ def plotCorrelationHeatMap(cnvs, list_dim, output_path=None):
     plt.show()
 
 def checkIfMandatoryColumnsExist(cnvs: pd.DataFrame, post_data_preparation=True):
-    if post_data_preparation:
+    if post_data_preparation == False:
         mandatory_columns = ['START', 'STOP', 'CHR', 'SNP', 'SCORE', 'WF', 'TwoAlgs']
     else:
-        mandatory_columns = ['START', 'STOP', 'CHR', 'SNP', 'SCORE', 'WF', 'TwoAlgs']
+        mandatory_columns = ['Score_SNP', 'WF', 'TwoAlgs', 'overlapCNV_Centromere', 'overlapCNV_SegDup', 'DENSITY', 'CallRate', 'Nb_Probe_tech']
     if len(set(cnvs.columns.tolist()) & set(mandatory_columns)) != len(mandatory_columns):
         missing_col = list(set(mandatory_columns).difference(cnvs.columns.tolist()))
         raise Exception("\nSome columns are mandatory: {}\n{} are missing".format(mandatory_columns, missing_col))
@@ -47,9 +47,18 @@ def checkIfMandatoryColumnsExist(cnvs: pd.DataFrame, post_data_preparation=True)
 def checkColumnsformats(cnvs:pd.DataFrame, post_data_preparation=True):
     # TODO
     if post_data_preparation == False:
-        if cnvs[['START', 'STOP']].dtypes().tolist().unique() != int:
-            print("pas OK")
-    
+        int_columns = ['START', 'STOP','SNP']
+        if cnvs[int_columns].dtypes.unique() != int:
+            digCNV_logger.logger.info("{} column must be integer".format(int_columns))
+    else:
+        int_columns = ['Nb_Probe_tech']
+        if cnvs[int_columns].dtypes.unique() != int:
+            digCNV_logger.logger.info("{} column must be integer".format(int_columns))
+
+    float_columns = ['SCORE', 'LRR_mean','WF']
+    if cnvs[float_columns].dtypes.unique() != float:
+        digCNV_logger.logger.info("{} column must be float".format(float_columns))
+        
     
 def main():
     cnvs = pd.read_csv('../data/UKBB_clean_for_DigCNV.tsv', sep='\t', index_col=False)

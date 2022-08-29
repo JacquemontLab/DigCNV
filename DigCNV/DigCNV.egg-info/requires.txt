@@ -1,8 +1,0 @@
-pandas
-imblearn
-sklearn
-matplotlib
-seaborn
-
-[dev]
-pytest

@@ -1,7 +1,7 @@
 from DigCNV import digCNV_logger
 import pandas as pd
 import numpy as np
-from os.path import exists
+from os.path import exists, split, join
 
 def addDerivedFeatures(cnvs: pd.DataFrame) -> pd.DataFrame:
     cnvs["SIZE"] = cnvs["STOP"] - cnvs["START"] + 1 
@@ -16,7 +16,14 @@ def addCallRateToDataset(cnvs: pd.DataFrame, call_rate_path: str, callrate_colna
     else:
         raise Exception ("Given path doesn't exist")
     callrates.rename(columns = {callrate_colname:"CallRate"}, inplace=True)
-    cnvs_with_callrate = pd.merge(cnvs, callrates.loc[:,[individual_colname, "CallRate"]], how="left", left_on=individual_colname, right_on="SampleID" )
+    if len(callrates[individual_colname].unique()) != callrates.shape[0]:
+        raise Exception("CallRates file must contains only unique individuals")
+    if "CallRate" in cnvs.columns.tolist():
+        digCNV_logger.logger.info("Clean existing CallRate column")
+        cnvs.drop(columns={"CallRate"}, inplace=True)
+
+    cnvs_with_callrate = pd.merge(cnvs, callrates.loc[:,[individual_colname, "CallRate"]], how="left", left_on=individual_colname, right_on=individual_colname)
+
     if individual_colname != "SampleID":
         cnvs_with_callrate.drop(columns=[individual_colname], inplace = True)
     digCNV_logger.logger.info("CallRate added to dataset")
@@ -39,11 +46,16 @@ def addNbProbeByTech(cnvs: pd.DataFrame, nb_prob_tech=None, pfb_file_path=None) 
     digCNV_logger.logger.info("Number of probes in technology added")
     return cnvs
 
-def addChromosomicAnnotation(cnvs: pd.DataFrame) -> pd.DataFrame:
-    centromeres_list_path = '../data/Region_centromere_hg19.dat'
-    cnvs["overlapCNV_Centromere"] = getCentromereOverlap(cnvs, centromeres_list_path)
+def addChromosomicAnnotation(cnvs: pd.DataFrame, centromere_list_path=None, segdup_list_path=None) -> pd.DataFrame:
+    this_dir, this_filename = split(__file__)
+    if centromere_list_path == None:
+        centromere_list_path = join(this_dir, "data", "Region_centromere_hg19.dat")
+    if segdup_list_path == None:
+        segdup_list_path = join(this_dir, "data", "SegDup_filtres_Ok_Oct.map")
+
+    cnvs["overlapCNV_Centromere"] = getCentromereOverlap(cnvs, centromere_list_path)
     digCNV_logger.logger.info("Centromere overlap added to CNVs")
-    cnvs = getSegDupOverlap(cnvs, '../data/SegDup_filtres_Ok_Oct.map')
+    cnvs = getSegDupOverlap(cnvs, segdup_list_path)
     digCNV_logger.logger.info("Both chromosomic annotation finished")
     return cnvs
 
@@ -51,7 +63,7 @@ def getCentromereOverlap(cnvs: pd.DataFrame, centromeres_list_path:str) -> list:
     if exists(centromeres_list_path):
         centromeres = pd.read_csv(centromeres_list_path, sep='\t')
     else:
-        raise Exception ("File note found")
+        raise Exception ("File {} note found".format(centromeres_list_path))
 
     #validate the necessary titles of the regions of interest file
     nescessaryRegionTitles = ["CHR", "START", "STOP"]

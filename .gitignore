@@ -1,3 +1,6 @@
-DigCNVlib/__pycache__/*
+DigCNV/__pycache__/*
+
 outputs/*
 DigCNVenv/*
+dist/*
+DigCNV/DigCNV.egg-info/*
