@@ -3,6 +3,13 @@ import pandas as pd
 import numpy as np
 from os.path import exists, split, join
 
+def addMicroArrayQualityData(cnvs, data_path:str):
+    data = pd.read_csv(data_path)
+    data.rename(columns={})
+    cnvs_qc = pd.merge(cnvs, data, how="left", on='SampleID')
+    return cnvs_qc
+
+
 def addDerivedFeatures(cnvs: pd.DataFrame) -> pd.DataFrame:
     cnvs["SIZE"] = cnvs["STOP"] - cnvs["START"] + 1 
     cnvs["DENSITY"] =  cnvs["SNP"] / cnvs["SIZE"]
