@@ -1,0 +1,5 @@
+DigCNVenv
+digcnv
+dist
+outputs
+temp_data

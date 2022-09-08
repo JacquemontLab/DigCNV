@@ -1,0 +1,2 @@
+[console_scripts]
+digcnv = digcnv.__main__:main

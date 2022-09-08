@@ -1,0 +1,9 @@
+LICENCE
+MANIFEST.in
+README.md
+pyproject.toml
+digcnv/DigCNV.egg-info/PKG-INFO
+digcnv/DigCNV.egg-info/SOURCES.txt
+digcnv/DigCNV.egg-info/dependency_links.txt
+digcnv/DigCNV.egg-info/requires.txt
+digcnv/DigCNV.egg-info/top_level.txt

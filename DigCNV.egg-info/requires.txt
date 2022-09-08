@@ -1,0 +1,10 @@
+pandas
+configparser
+imbalanced-learn
+scikit-learn
+matplotlib
+seaborn
+joblib>=0.11
+
+[dev]
+pytest

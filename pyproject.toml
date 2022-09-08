@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "DigCNV"
-version = "0.1.2"
+version = "0.2.8"
 description = "DigCNV library: Discriminates true from false CNVs called by at least two algorithm (QuantiSNP and PennCNV)"
 readme = "README.md"
 authors = [{ name = "Thomas Renne", email = "thomas.renne@umontreal.ca" }]
@@ -17,10 +17,12 @@ classifiers = [
 keywords = ["cnv", "quality control", "machine learning"]
 dependencies = [
     'pandas',
-    'imblearn',
-    'sklearn',
+    'configparser',
+    'imbalanced-learn',
+    'scikit-learn',
     'matplotlib',
-    'seaborn'
+    'seaborn',
+    'joblib>=0.11'
 ]
 requires-python = ">=3.10.4"
 
@@ -31,4 +33,13 @@ dev = ["pytest"]
 Homepage = "https://github.com/labjacquemont/DigCNV"
 
 [tool.setuptools.packages.find]
-where = ["DigCNV"]
+exclude = [
+    "test*",
+]  # Scan the project directory with the default parameters
+
+
+[tool.setuptools]
+include-package-data = true
+
+[project.scripts]
+digcnv = "digcnv.__main__:main"

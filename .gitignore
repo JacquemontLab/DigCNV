@@ -6,3 +6,4 @@ dist/*
 DigCNV/DigCNV.egg-info/*
 DigCNV/cnvision/__init__.py
 DigCNV/cnvision/__pycache__/*
+temp_data/*
