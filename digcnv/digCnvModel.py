@@ -1,6 +1,10 @@
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier, GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, RocCurveDisplay
 import joblib
 import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+
 
 from digcnv import digCNV_logger
 
@@ -101,12 +105,16 @@ class DigCnvModel:
         return voting_clf
     
     def openPreTrainedDigCnvModel(self, model_path:str):
+        has_warning = False
+        with warnings.catch_warnings(record=True) as w:
+            dimensions, model = joblib.load(model_path)
+            digCNV_logger.logger.info("Pre trained model loaded from {}".format(model_path))
+            if len(w) > 0:
+                digCNV_logger.logger.info("Version Warning: {}".format(w[0]))
+            self._dimensions = dimensions
+            digCNV_logger.logger.info("Pre trained model will use {} as predictors".format(dimensions))
+            self._model = model
 
-        dimensions, model = joblib.load(model_path)
-        digCNV_logger.logger.info("Pre trained model loaded from {}".format(model_path))
-        self._dimensions = dimensions
-        digCNV_logger.logger.info("Pre trained model will use {} as predictors".format(dimensions))
-        self._model = model
 
     def checkIfDigCnvFitted(self) -> bool: 
         return hasattr(self._model, "classes_")
@@ -130,12 +138,42 @@ class DigCnvModel:
             if use_percentage:
                 predict_proba = self._model.predict_proba(split_cnvs)
                 digCNV_logger.logger.info("Classes probabilities added to CNV resutls")
-                print(predict_proba)
+                digCNV_logger.logger.info(predict_proba)
         else:
             raise Exception("DigCNV model not defined!")
         return cnvs
     
-    def evaluateCnvClassification(self, testing_df: pd.DataFrame, expected_valeues: pd.Series):
+    def evaluateCnvClassification(self, testing_df: pd.DataFrame, expected_values: pd.Series, images_dir_path=""):
         split_cnvs = testing_df.loc[:,self._dimensions]
         if self.checkIfDigCnvFitted():
             predictions = self._model.predict(split_cnvs)
+        else:
+            raise Exception("DigCNV model isn't trained so you can't perform classifications")
+        results = pd.DataFrame({"predict": predictions, "bon": expected_values})
+        groups_count = results.groupby(['predict', 'bon']).size()
+    
+        digCNV_logger.logger.info(f"Sensibility : {groups_count[1][1]/groups_count[1].sum():.3f}")
+        digCNV_logger.logger.info(f"Specificity : {groups_count[0][0]/groups_count[0].sum():.3f}")
+        digCNV_logger.logger.info(f"AUC : {roc_auc_score(expected_values, predictions):.2f}%")
+        digCNV_logger.logger.info(f"Accuracy : {accuracy_score(expected_values, predictions):.3f}")
+        digCNV_logger.logger.info(f"F1 Score : {f1_score(expected_values, predictions):.3f}")
+    
+        RocCurveDisplay.from_estimator(self._model, testing_df, expected_values)
+        if images_dir_path != "":
+            plt.savefig("{}/ROC_curve.pdf".format(images_dir_path))
+        plt.show()
+        plt.close()
+        
+        proba = self._model.predict_proba(split_cnvs)
+        proba = pd.DataFrame(proba)
+        proba["predict"] = predictions
+        proba["true_class"] = expected_values.tolist()
+        proba.columns = ["C0","C1", "predict","true_class"]
+        split_cnvs = split_cnvs.reset_index()
+        full_results = pd.concat([split_cnvs, proba], axis=1)
+        ax = full_results.pivot(columns='true_class', values='C1').plot.hist(bins=100, figsize=(12,8), color=["red", "green"], label=["CNV", "No CNV"], stacked=True)
+        plt.legend()
+        if images_dir_path != "":
+            plt.savefig("{}/proba_distribution.pdf".format(images_dir_path))
+        plt.show()
+        plt.close()

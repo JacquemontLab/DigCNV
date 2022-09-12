@@ -20,32 +20,32 @@ def removeLinesWithNA(cnvs, dimensions):
             cnvs_clean = cnvs_clean.drop(index=removed_index)
             cnvs_clean.reset_index(drop=True, inplace = True)
             split_cnvs.reset_index(drop=True, inplace = True)
+        i += 1
     return cnvs_clean, removed_cnvs
 
-def createTrainingTestingDatasets(data, X_dimension = "SnipPeep_Ok", all_data_set=False):
+def createTrainingTestingDatasets(cnvs, dimensions:list, X_dimension = "SnipPeep_Ok", all_data_set=False):
+    data = cnvs.loc[:,dimensions + [X_dimension]]
     if all_data_set:
         X_train = data.drop(columns=[X_dimension])
         X_test = data.drop(columns=[X_dimension])
-        y_train = data.SnipPeep_Ok.tolist()
-        y_test = data.SnipPeep_Ok.tolist()
+        y_train = data[X_dimension].tolist()
+        y_test = data[X_dimension].tolist()
     else:
         data_rf = data.drop(columns=[X_dimension])
-        labels = data.SnipPeep_Ok
+        labels = data[X_dimension]
         X_train, X_test, y_train, y_test = train_test_split(data_rf, labels, random_state=42, test_size = 0.33, shuffle=True)
     digCNV_logger.logger.info("Training dataset")
     digCNV_logger.logger.info(X_train.shape)
     digCNV_logger.logger.info("Testing dataset")
     digCNV_logger.logger.info(X_test.shape)
-    return X_train, X_test, y_train, y_test
+    return X_train, y_train, X_test, y_test
 
 def uniformizeClassesSizes(X_train, y_train, k_neighbors, over_sampling, under_sampling):
-    digCNV_logger.logger.info("Training dataset classes")
-    digCNV_logger.logger.info(pd.Series(y_train).value_counts())
+    digCNV_logger.logger.info("\nTraining dataset classes\n{}".format(y_train.value_counts()))
     over = SMOTE(sampling_strategy=over_sampling, k_neighbors = k_neighbors, n_jobs=-1, random_state=42)
     under = RandomUnderSampler(sampling_strategy=under_sampling, random_state=42)
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
     X_train, y_train  = pipeline.fit_resample(X_train, y_train)
-    digCNV_logger.logger.info("Training dataset after uniformizing classes")
-    digCNV_logger.logger.info(pd.Series(y_train).value_counts())
+    digCNV_logger.logger.info("\nTraining dataset after uniformizing classes\n{}".format(y_train.value_counts()))
     return X_train, y_train

@@ -34,16 +34,6 @@ digcnv/data/CNVision_format_merge_ukbb.pl
 digcnv/data/DigCNV_model_multiple_technos.pkl
 digcnv/data/Region_centromere_hg19.dat
 digcnv/data/SegDup_filtres_Ok_Oct.map
-dist/digcnv/CNVision.py
-dist/digcnv/DigCNV.py
-dist/digcnv/DigCnvPreProcessing.py
-dist/digcnv/DigCnvTunning.py
-dist/digcnv/__init__.py
-dist/digcnv/dataPreparation.py
-dist/digcnv/dataVerif.py
-dist/digcnv/digCNV_logger.py
-dist/digcnv/digCnvModel.py
-dist/digcnv/utils.py
 tests/__init__.py
 tests/test_dataPreparation.py
 tests/test_dataVerif.py
