@@ -130,9 +130,54 @@ predicted_cnvs = model.evaluateCnvClassification(testing_df=X_test, expected_val
 from digcnv import DigCNVTunning
 ```
 
-## Files format example
+## Input files format example
 #### PennCNV output
+```
+chr20:44356194-44378577       numsnp=7      length=22,384      state2,cn=1 /path/to/finalreport/10001 startsnp=rs232258 endsnp=rs380421 conf=16.163
+chr9:17583310-17622213        numsnp=21     length=38,904      state5,cn=3 /path/to/finalreport/10001 startsnp=rs1028594 endsnp=rs3808750 conf=101.052
+chr10:47543322-47703613       numsnp=47     length=160,292     state5,cn=3 /path/to/finalreport/10001 startsnp=rs11259779 endsnp=rs4128664 conf=156.227
+chr6:4263349-4472587          numsnp=69     length=209,239     state2,cn=1 /path/to/finalreport/10002 startsnp=rs6937085 endsnp=rs7746329 conf=120.225
+chr6:80608294-80611616        numsnp=6      length=3,323       state2,cn=1 /path/to/finalreport/10002 startsnp=rs17833835 endsnp=rs1887571 conf=20.441
+...
+```
 #### PennCNV quality output
+```
+SampleID        LRR_mean        LRR_median      LRR_SD  BAF_mean        BAF_median      BAF_SD  BAF_DRIFT       WF      GCWF
+10001   -0.0045 0.0000  0.1474  0.5028  0.5000  0.0268  0.000036        -0.0141 -0.0002
+10002   0.0056  0.0000  0.1588  0.5027  0.5000  0.0259  0.000000        0.0194  0.0018
+10003   -0.0090 0.0000  0.1564  0.5031  0.5000  0.0308  0.000000        0.0132  0.0053
+10004   0.0014  0.0000  0.1494  0.5032  0.5000  0.0280  0.000000        0.0184  0.0018
+10005   0.0031  0.0000  0.1412  0.5025  0.5000  0.0272  0.000000        0.0170  0.0001
+...
+```
 #### QuantiSNP output
+```
+Sample Name     Chromosome      Start Position (bp)     End Position (bp)       Start Probe ID  End Probe ID    Length (bp)     No. Probes      Copy Number     Max. Log BF     Log BF: State 0 Log BF: State 1 Log BF: State 2 Log BF: State 3     Log BF: State 4 Log BF: State 5 Log BF: State 6
+10001   1              31943355        31943355 rs7545865       rs7545865                     1 1       1       1.2152  -24.0258        -2.5507 0       1.2152  -16.1517        -19.4123        -25.013
+10001   1             111930916       111934304 rs12077338      rs4839132                  3389 4       1       4.57286 -42.9409        4.57286 0       2.93527 -29.2398        -35.802 -44.9483
+10001   2              44082362        44096010 rs6718187       rs6752551                 13649 4       3       0.954579        -62.543 -41.1676        0       -14.003 0.954579        0.576184        -60.5049
+10001   2              92308395        92308395 rs4509760       rs4509760                     1 1       1       0.0218224       -26.3579        -4.38718        0       0.0218224       -19.0042        -21.9322        -27.2609
+10001   3              59820539        59821071 rs1905866       rs17362486                  533 2       4       0.33986 -9.54639        -22.8223        0       -3.94108        -6.15468        0.33986 -8.45724
+...
+```
 #### CallRate file
+```
+SampleID        callrate
+10001   0.961946
+10002   0.9554
+10003   0.959769
+10004   0.9605
+10005   0.961372
+...
+```
 #### PFB file
+```
+Name    Chr     Position        PFB
+rs1000219       10      54442734        0.613
+rs1000251       10      71162686        0.796
+rs1000280       10      100096148       0.715
+rs1000416       10      2256731 0.739
+rs1000752       10      112198864       0.29
+rs1000797       10      129652787       0.88
+...
+```

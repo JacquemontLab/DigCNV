@@ -11,6 +11,12 @@ from digcnv.digCNV_logger import logger as dc_logger
 from digcnv.digCNV_logger import changeLoggingLevel
 
 def main():
+    """Run DigCNV in one line script. 
+
+    :raises Exception: _description_
+    :return: Dataframe containing all CNVs with their describing features and the DigCNV prediction.
+    :rtype: pd.Dataframe
+    """    
     if len(sys.argv) < 2:
         raise Exception("You must give at least one argument: the pathway to the config file. Get example with the function ...")
 
