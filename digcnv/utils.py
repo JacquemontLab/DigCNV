@@ -15,17 +15,21 @@ def getConfigFileExample(exmpl_conf_output: str):
         "PC_QC_path" : "<Path to PennCNV microarray quality file>",
         "QS_output_path": "<Path to QuantiSNP file>"
     }
-    config_file["CallRates"] = {
-        "CallRate_path": "<Path to CallRates file>",
-        "individual_colname": "<Column name of individials>",
-        "callrates_colname": "<Column name of Callrate values>"
-    }
-    config_file["PFBs"] = {
-        "PFB_path": "<Path to PFB file>"
-    }
+    # config_file["CallRates"] = {
+    #     "CallRate_path": "<Path to CallRates file>",
+    #     "individual_colname": "<Column name of individials>",
+    #     "callrates_colname": "<Column name of Callrate values>"
+    # }
+    # config_file["PFBs"] = {
+    #     "PFB_path": "<Path to PFB file>"
+    # }
     config_file["Output"] = {
         "Save_to_file": "<True or False if you want to save the dataset to a file>",
         "Output_path": "<Path of the future output file>"
+    }
+
+    config_file["DigCNV"] = {
+        "model_path": "<Path of the downloaded model. Available at : https://murena.io/s/xEsyae6gxfMEnWJ>"
     }
 
     with open(exmpl_conf_output, 'w') as configfileObj:
@@ -52,12 +56,12 @@ def readDigCNVConfFile(conf_file_path: str) -> dict:
     parameters["QS"] = config_file.get('Inputs', "QS_output_path")
     parameters["QC"] = config_file.get('Inputs', "PC_QC_path")
 
-    parameters["CR_path"] = config_file.get('CallRates', "CallRate_path")
-    parameters["ind_name"] = config_file.get('CallRates', "individual_colname")
-    parameters["CR_name"] = config_file.get('CallRates', "callrates_colname")
+    # parameters["CR_path"] = config_file.get('CallRates', "CallRate_path")
+    # parameters["ind_name"] = config_file.get('CallRates', "individual_colname")
+    # parameters["CR_name"] = config_file.get('CallRates', "callrates_colname")
 
-    parameters["PFB"] = config_file.get('PFBs', "PFB_path")
-
+    # parameters["PFB"] = config_file.get('PFBs', "PFB_path")
+    parameters['DigCnvModel'] = config_file.get('DigCNV', 'model_path')
     parameters["save"] = config_file.get('Output', 'Save_to_file')
     parameters["output"] = config_file.get('Output', 'Output_path')
     digCNV_logger.logger.info("Set of parameters created for DigCNV")

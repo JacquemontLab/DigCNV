@@ -1,8 +1,30 @@
 # DigCNV
-### A machine learning software discrimating true from false CNVs
-CNVs called by algorithms such as *PennCNV* or *QuantiSNP* have high false positive rates.
-False CNVs bring noise to analysis and could distort a diagnosis
-Thus we developped a algorithm analysing multiples CNVs features to remove these false CNVs 
+![DigCNV logo](http... "DigCNV")
+
+![PyPI - License](https://img.shields.io/pypi/l/DigCNV?color=gree)
+[![PyPI](https://img.shields.io/pypi/v/digcnv)](https://badge.fury.io/py/digcnv)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/DigCNV)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/DigCNV)
+![PyPI - Status](https://img.shields.io/pypi/status/DigCNV)
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/labjacquemont/DigCNV)
+![GitHub all releases](https://img.shields.io/github/downloads/labjacquemont/DigCNV/total)
+![GitHub issues](https://img.shields.io/github/issues-raw/labjacquemont/DigCNV)
+## A machine learning model to quality control genotyped CNVs
+False CNVs bring noise to analysis and could distort a diagnosis.
+CNV calling produce false negative and positive identifications. 
+To remove false negative it's recommended to use multiple CNV caller at a time. 
+So we present here, a statistical approach to clean CNV results coming from two calling algorithms, 
+*PennCNV* or *QuantiSNP*
+
+This machine learning can be used in two different ways:
+- a first one-line script to annotate any new CNVs on our pre-trained model. Trained on 38,000 CNVs coming from 7 different genotyping technologies. 
+This model have AUC > 90% for most technologies (already trained-on or  new technologies) 
+- a second approach line by line to train and test our machine learning model on your own visualized dataset and performe some statistics. 
+
+## DigCNV models
+- Model presented in IAMDRS congress available at: https://murena.io/s/xEsyae6gxfMEnWJ
+- Most up-to-date model available at https://murena.io/s/xEsyae6gxfMEnWJ
 
 ## Classify CNVs with one line
 
@@ -12,24 +34,22 @@ pip install digcnv
 
 python3 -m digcnv [-v] <Path to config file>
 ```
+
 #### Config file
+Example of config file needed for the one line execution. Example can be download with function `getConfigFileExample(output_path)`
 ```
 [Inputs]
 pc_output_path = Path to the PennCNV output file
 pc_qc_path = Path to the PennCNV microarray quality file 
 qs_output_path = Path to the QuantiSNP output file
 
-[CallRates]
-callrate_path = Path to callarate file (.tsv)
-individual_colname = Column name of the individuals (Matching names in PennCNV and QuantiSNP outputs)
-callrates_colname = Column name of the callrates
-
-[PFBs]
-pfb_path = Path to the PFB file 
 
 [Output]
 Save_to_file = True
 Output_path = /home/thomas/Documents/scripts/DigCNV/temp_data/DigCNV_pred.tsv
+
+[DigCNV]
+model_path": Path of the downloaded model. Available at : 
 ```
 
 
@@ -158,26 +178,5 @@ Sample Name     Chromosome      Start Position (bp)     End Position (bp)       
 10001   2              44082362        44096010 rs6718187       rs6752551                 13649 4       3       0.954579        -62.543 -41.1676        0       -14.003 0.954579        0.576184        -60.5049
 10001   2              92308395        92308395 rs4509760       rs4509760                     1 1       1       0.0218224       -26.3579        -4.38718        0       0.0218224       -19.0042        -21.9322        -27.2609
 10001   3              59820539        59821071 rs1905866       rs17362486                  533 2       4       0.33986 -9.54639        -22.8223        0       -3.94108        -6.15468        0.33986 -8.45724
-...
-```
-#### CallRate file
-```
-SampleID        callrate
-10001   0.961946
-10002   0.9554
-10003   0.959769
-10004   0.9605
-10005   0.961372
-...
-```
-#### PFB file
-```
-Name    Chr     Position        PFB
-rs1000219       10      54442734        0.613
-rs1000251       10      71162686        0.796
-rs1000280       10      100096148       0.715
-rs1000416       10      2256731 0.739
-rs1000752       10      112198864       0.29
-rs1000797       10      129652787       0.88
 ...
 ```

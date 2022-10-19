@@ -91,7 +91,7 @@ def checkIfMandatoryColumnsExist(cnvs: pd.DataFrame, post_data_preparation=True)
                              'CHR', 'SNP', 'SCORE', 'WF', 'TwoAlgs']
     else:
         mandatory_columns = ['Score_SNP', 'WF', 'TwoAlgs', 'overlapCNV_Centromere',
-                             'overlapCNV_SegDup', 'DENSITY', 'CallRate', 'Nb_Probe_tech']
+                             'overlapCNV_SegDup', 'DENSITY']
     if len(set(cnvs.columns.tolist()) & set(mandatory_columns)) != len(mandatory_columns):
         missing_col = list(
             set(mandatory_columns).difference(cnvs.columns.tolist()))

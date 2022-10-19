@@ -1,4 +1,7 @@
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier, GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, RocCurveDisplay
 import joblib
 import pandas as pd
@@ -16,19 +19,19 @@ class DigCnvModel:
     def __init__(self):
         """Creating the DigCNV instance and setting potential hyperparameters But no model is created you must create the classifier or load a pretrained model.
         """
-        self._rf_params = {"n_estimators": 142,
-                           "max_depth": 24,
-                           "min_samples_split": 2,
-                           "min_samples_leaf": 1,
-                           "max_leaf_nodes": 151,
-                           "min_weight_fraction_leaf": 0.1}
-        self._gtb_params = {"n_estimators": 209,
-                            "max_depth": 12,
-                            "min_samples_split": 12,
-                            "min_samples_leaf": 31,
-                            "learning_rate": 0.5}
-        self._ada_params = {"n_estimators": 117,
-                            "learning_rate": 0.1}
+        self.rf_params  = {"n_estimators":148,
+                    "max_depth": 28,
+                    "min_samples_split": 2,
+                    "min_samples_leaf": 1,
+                    "max_leaf_nodes": 149}
+
+        self.bg_knn_params = {'n_estimators': 119,
+                        'max_samples' :0.5,
+                        'base_estimator__n_neighbors':17}
+
+        self.svm_params = {'C':18.8,
+                    'gamma' : 'scale',
+                    'tol': 2e-05}
 
         self._model = None
         self._dimensions = []
@@ -57,105 +60,107 @@ class DigCnvModel:
         intersect = params.keys() & mandatory_params
         if intersect < 6:
             raise ValueError(
-                "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
+                "Sorry at least one of the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._rf_params = params
         digCNV_logger.logger.info("Random Forest hyperparameters set")
 
     @property
-    def gtb_params(self) -> dict:
+    def bg_knn_params(self) -> dict:
         """get the list of Gradient tree boosting hyperparameters
 
         :return: dictionnary of Gradient tree boosting hyperparameters
         :rtype: dict
         """
-        return self._gtb_params
+        return self._bg_knn_params
 
     # a setter function
-    @gtb_params.setter
-    def gtb_params(self, params: dict):
+    @bg_knn_params.setter
+    def bg_knn_params(self, params: dict):
         """set the list of Gradient tree boosting hyperparameters
 
         :param params: dictionary containing Gradient tree boosting hyperparameters to set
         :type params: dict
         :raises ValueError: If at least one of the dictonnary value is missing
         """
-        mandatory_params = {"n_estimators", "max_depth",
-                            "min_samples_split", "min_samples_leaf", "learning_rate"}
+        mandatory_params = {"n_estimators", "max_samples",
+                            "base_estimator__n_neighbors"}
         intersect = params.keys() & mandatory_params
-        if intersect < 6:
+        if intersect < 3:
             raise ValueError(
                 "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
-        self._gtb_params = params
+        self._bg_knn_params = params
         digCNV_logger.logger.info("Gradient Tree boosting hyperparameters set")
 
     @property
-    def ada_params(self) -> dict:
+    def svm_params(self) -> dict:
         """get the list of Ada boosting hyperparameters
 
         :return: dictionnary of Ada boosting hyperparameters
         :rtype: dict
         """
-        return self._ada_params
+        return self._svm_params
 
     # a setter function
-    @ada_params.setter
-    def ada_params(self, params: dict):
+    @svm_params.setter
+    def svm_params(self, params: dict):
         """set the list of Ada boosting hyperparameters
 
         :param params: dictionary containing Ada boosting hyperparameters to set
         :type params: dict
         :raises ValueError: If at least one of the dictonnary value is missing
         """
-        mandatory_params = {"n_estimators", "learning_rate"}
+        mandatory_params = {"C", "gamma", "tol"}
         intersect = params.keys() & mandatory_params
-        if intersect < 6:
+        if intersect < 3:
             raise ValueError(
                 "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
-        self._ada_params = params
+        self._svm_params = params
         digCNV_logger.logger.info("Ada boosting hyperparameters set")
 
-    def createDigCnvClassifier(self, rf_params=None, gtb_params=None, ada_params=None) -> VotingClassifier:
+    def createDigCnvClassifier(self, rf_params=None, bg_knn_params=None, svm_params=None) -> VotingClassifier:
         """Create the DigCNV classifier based on three Classifiers, a Random forest, a Gradient Tree boosting and an Ada boosting classifiers.
         You can set dictionnaries of hyperparameters for each machine learning model or used hyperparameters stored in object by letting arguments empty
 
         :param rf_params: dictionary containing Random forest hyperparameters to set, defaults to None
         :type rf_params: dict, optional
-        :param gtb_params: dictionary containing Gradient Tree boosting hyperparameters to set, defaults to None
-        :type gtb_params: dict, optional
-        :param ada_params: dictionary containing Ada boosting hyperparameters to set, defaults to None
-        :type ada_params: dict, optional
+        :param bg_knn_params: dictionary containing Gradient Tree boosting hyperparameters to set, defaults to None
+        :type bg_knn_params: dict, optional
+        :param svm_params: dictionary containing Ada boosting hyperparameters to set, defaults to None
+        :type svm_params: dict, optional
         :return: The DigCNV model created and ready for training.
         :rtype: VotingClassifier
         """
         if rf_params is None:
             rf_params = self.rf_params
-
-        rf_clf = RandomForestClassifier(n_estimators=rf_params["n_estimators"],
-                                        max_depth=rf_params["max_depth"],
-                                        min_samples_split=rf_params["min_samples_split"],
-                                        min_samples_leaf=rf_params["min_samples_leaf"],
-                                        max_leaf_nodes=rf_params["max_leaf_nodes"],
-                                        min_weight_fraction_leaf=0.0,
+        rf_clf = RandomForestClassifier(n_estimators = rf_params["n_estimators"],
+                                        max_depth = rf_params["max_depth"],
+                                        min_samples_split = rf_params["min_samples_split"],
+                                        min_samples_leaf = rf_params["min_samples_leaf"],
+                                        max_leaf_nodes = rf_params["max_leaf_nodes"],
+                                        min_weight_fraction_leaf = 0.0,
                                         random_state=42)
-        if gtb_params is None:
-            gtb_params = self.gtb_params
 
-        gtb_clf = GradientBoostingClassifier(n_estimators=gtb_params["n_estimators"],
-                                             max_depth=gtb_params["max_depth"],
-                                             min_samples_split=gtb_params["min_samples_split"],
-                                             min_samples_leaf=gtb_params["min_samples_leaf"],
-                                             learning_rate=gtb_params["learning_rate"],
-                                             min_weight_fraction_leaf=0.0,
-                                             random_state=42)
-        if ada_params is None:
-            ada_params = self.ada_params
+        if bg_knn_params is None:
+            bg_knn_params = self.bg_knn_params
 
-        ada_clf = AdaBoostClassifier(n_estimators=ada_params["n_estimators"],
-                                     learning_rate=ada_params["learning_rate"],
-                                     random_state=42)
+        knn_clf = BaggingClassifier(base_estimator = KNeighborsClassifier(weights ="distance",
+                                                                        n_neighbors = bg_knn_params["base_estimator__n_neighbors"]),
+                                    bootstrap = True,
+                                    bootstrap_features = True,
+                                    n_estimators = bg_knn_params["n_estimators"],
+                                    max_samples = bg_knn_params["max_samples"],
+                                    random_state=42)
+        if svm_params is None:
+            svm_params = self.svm_params
+
+        svm_clf = SVC(gamma = svm_params['gamma'],
+                            C = svm_params['C'],
+                            tol = svm_params['tol'],
+                            probability=True,
+                            random_state=42)
 
         voting_clf = VotingClassifier(estimators=[('Random Forest', rf_clf), (
-            "Gradient Tree Boosting", gtb_clf), ("Ada Boosting", ada_clf)], voting='soft')
+            "Bagging KNN", knn_clf), ("SVC", svm_clf)], voting='soft')
         self._model = voting_clf
         return voting_clf
 
