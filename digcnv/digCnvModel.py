@@ -58,7 +58,7 @@ class DigCnvModel:
         mandatory_params = {"n_estimators", "max_depth", "min_samples_split",
                             "min_samples_leaf", "max_leaf_nodes", "min_weight_fraction_leaf"}
         intersect = params.keys() & mandatory_params
-        if intersect < 6:
+        if len(intersect) < 6:
             raise ValueError(
                 "Sorry at least one of the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._rf_params = params
@@ -85,7 +85,7 @@ class DigCnvModel:
         mandatory_params = {"n_estimators", "max_samples",
                             "base_estimator__n_neighbors"}
         intersect = params.keys() & mandatory_params
-        if intersect < 3:
+        if len(intersect) < 3:
             raise ValueError(
                 "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._bg_knn_params = params
@@ -111,7 +111,7 @@ class DigCnvModel:
         """
         mandatory_params = {"C", "gamma", "tol"}
         intersect = params.keys() & mandatory_params
-        if intersect < 3:
+        if len(intersect) < 3:
             raise ValueError(
                 "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._svm_params = params
