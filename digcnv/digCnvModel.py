@@ -23,7 +23,8 @@ class DigCnvModel:
                     "max_depth": 28,
                     "min_samples_split": 2,
                     "min_samples_leaf": 1,
-                    "max_leaf_nodes": 149}
+                    "max_leaf_nodes": 149,
+                    "min_weight_fraction_leaf":0.0}
 
         self.bg_knn_params = {'n_estimators': 119,
                         'max_samples' :0.5,
