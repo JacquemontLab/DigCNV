@@ -1,1 +1,1 @@
-include digcnv/data/*
+include ./digcnv/data/*

@@ -32,7 +32,7 @@ numpy==1.23.2
     #   seaborn
 packaging==21.3
     # via matplotlib
-pandas==1.4.3
+pandas==1.5.3
     # via
     #   DigCNV (pyproject.toml)
     #   seaborn
@@ -52,7 +52,7 @@ scikit-learn==1.1.2
     # via
     #   imbalanced-learn
     #   sklearn
-scipy==1.9.1
+scipy==1.9.3
     # via
     #   imbalanced-learn
     #   scikit-learn

@@ -27,7 +27,7 @@ def addMicroArrayQualityData(cnvs: pd.DataFrame, data_path: str) -> pd.DataFrame
 def addDerivedFeatures(cnvs: pd.DataFrame) -> pd.DataFrame:
     """Compute and add 3 derived CNV scores 
 
-    :param cnvs: list of CNVs with at least 4 mandatory columns, (`SSTART`, `STOP`, `SNP`, `SCORE`) 
+    :param cnvs: list of CNVs with at least 4 mandatory columns, (`START`, `STOP`, `SNP`, `SCORE`) 
     :type cnvs: pd.DataFrame
     :return: same list of CNVs with 3 new column scores, (`SIZE`, `DENSITY`, `Score_SNP`)
     :rtype: pd.DataFrame
@@ -200,7 +200,7 @@ def getSegDupOverlap(cnvs: pd.DataFrame, segdup_list_path: str) -> pd.DataFrame:
     return complete_cnvs
 
 
-def computeOneOverlap(cnvs:pd.DataFrame, START:int, STOP:int) -> np.ArrayLike:
+def computeOneOverlap(cnvs:pd.DataFrame, START:int, STOP:int):
     """Compute the percentage of overlap between a list of CNVs and START -- STOP coordinates of a given Segmental Duplication region. 
     Warning: CNVs must be on the same chromsome than the tested segmental duplication
 
