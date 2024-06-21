@@ -1,5 +1,5 @@
 # DigCNV
-![DigCNV logo](http... "DigCNV")
+![DigCNV logo](https://github.com/RudolphDev/DigCNV/blob/main/images/DigCNV_logo.png "DigCNV")
 
 ![PyPI - License](https://img.shields.io/pypi/l/DigCNV?color=gree)
 [![PyPI](https://img.shields.io/pypi/v/digcnv)](https://badge.fury.io/py/digcnv)
