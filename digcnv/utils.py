@@ -56,7 +56,7 @@ def readDigCNVConfFile(conf_file_path: str) -> dict:
     parameters["QS"] = config_file.get('Inputs', "QS_output_path")
     parameters["QC"] = config_file.get('Inputs', "PC_QC_path")
 
-    # parameters["CR_path"] = config_file.get('CallRates', "CallRate_path")
+    parameters["CallRate"] = config_file.get('Inputs', "callrate_path")
     # parameters["ind_name"] = config_file.get('CallRates', "individual_colname")
     # parameters["CR_name"] = config_file.get('CallRates', "callrates_colname")
 

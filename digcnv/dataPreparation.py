@@ -39,7 +39,7 @@ def addDerivedFeatures(cnvs: pd.DataFrame) -> pd.DataFrame:
     return cnvs
 
 
-def addCallRateToDataset(cnvs: pd.DataFrame, call_rate_path: str, callrate_colname="callRate", individual_colname="FID") -> pd.DataFrame:
+def addCallRateToDataset(cnvs: pd.DataFrame, call_rate_path: str, callrate_colname="callRate", individual_colname="SampleID") -> pd.DataFrame:
     """Add CallRate information to the given list of CNVs
 
     :param cnvs: list of CNVs with their scores

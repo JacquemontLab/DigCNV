@@ -1,4 +1,4 @@
-from DigCNV import dataPreparation
+from digcnv import dataPreparation
 import pandas as pd
 import pytest 
 

@@ -1,6 +1,7 @@
 from os.path import split, join
 import pandas as pd
 import sys
+from sklearn import preprocessing
 
 from digcnv import utils
 from digcnv import CNVision
@@ -31,6 +32,9 @@ def main():
         dc_logger.info("CNVs dataframe shape = {}".format(cnvs.shape))
         cnvs = dataPreparation.addMicroArrayQualityData(cnvs, parameters["QC"])
         dc_logger.info("CNVs dataframe shape = {}".format(cnvs.shape))
+        cnvs = dataPreparation.addCallRateToDataset(cnvs, parameters['CallRate'], callrate_colname="CallRate", individual_colname="SampleID")
+        dc_logger.info("CNVs dataframe shape = {}".format(cnvs.shape))
+
         cnvs = dataPreparation.addDerivedFeatures(cnvs)
         dc_logger.info("CNVs dataframe shape = {}".format(cnvs.shape))
         # cnvs = dataPreparation.addCallRateToDataset(cnvs, call_rate_path=parameters["CR_path"], callrate_colname=parameters["CR_name"], individual_colname=parameters["ind_name"])
@@ -46,8 +50,11 @@ def main():
         model.openPreTrainedDigCnvModel(parameters["DigCnvModel"])
 
     dataVerif.checkIfMandatoryColumnsExist(cnvs, post_data_preparation=True)
-    dataVerif.checkColumnsformats(cnvs, post_data_preparation=True)
+    dataVerif.checkColumnsformats(cnvs, post_data_preparation=False)
     cnvs, cnvs_with_na = dataVerif.computeNaPercentage(cnvs, dimensions=model._dimensions, remove_na_data=True)
+    scaler = preprocessing.StandardScaler()
+    cols = cnvs.columns
+    cnvs[model._dimensions] = scaler.fit_transform(cnvs[model._dimensions])
     predicted_cnvs = model.predictCnvClasses(cnvs)
     cnvs_with_na["DigCNVpred"] = None
     predicted_cnvs = pd.concat([predicted_cnvs, cnvs_with_na])

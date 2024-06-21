@@ -1,6 +1,7 @@
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn import preprocessing
 
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, RocCurveDisplay
 import joblib
@@ -36,6 +37,7 @@ class DigCnvModel:
 
         self._model = None
         self._dimensions = []
+        self._dimensions_scales = {}
         digCNV_logger.logger.info("Empty DigCNV model created")
 
     @property
@@ -178,9 +180,11 @@ class DigCnvModel:
                 "Pre trained model loaded from {}".format(model_path))
             if len(w) > 0:
                 digCNV_logger.logger.info("Version Warning: {}".format(w[0]))
-            self._dimensions = dimensions
+
+            self._dimensions = list(dimensions.keys())
+            self._dimensions_scales = dimensions
             digCNV_logger.logger.info(
-                "Pre trained model will use {} as predictors".format(dimensions))
+                "Pre trained model will use {} as predictors".format(dimensions.keys()))
             self._model = model
 
     def checkIfDigCnvFitted(self) -> bool:
@@ -199,9 +203,16 @@ class DigCnvModel:
         :type training_data: pd.DataFrame
         :param training_cat: A list of binary annotation for CNVs indicating if each CNV is a True CNV or an artefact, must int values.
         :type training_cat: pd.Series
-        """        
-        self._dimensions = training_data.columns.tolist()
-        self._model.fit(training_data, training_cat)
+        """   
+        scaler = preprocessing.StandardScaler()
+        cols = training_data.columns
+        X_train_scale = pd.DataFrame(scaler.fit_transform(training_data, training_cat), columns=cols) 
+        # for col in cols:
+            # self._dimensions_scales[col] = [training_data[col].min(), training_data[col].max()]         
+        for col in cols:
+            self._dimensions_scales[col] = [training_data[col].mean(), training_data[col].std()] 
+        self._dimensions = X_train_scale.columns.tolist()
+        self._model.fit(X_train_scale, training_cat)
 
     def saveDigCnvModelToPkl(self, output_path: str):
         """Save a trained DigCNV model to a pkl file to be used later
@@ -211,7 +222,7 @@ class DigCnvModel:
         :raises Exception: if the model isn't trained 
         """        
         if self.checkIfDigCnvFitted():
-            joblib.dump([self._dimensions, self._model], output_path)
+            joblib.dump([self._dimensions_scales, self._model], output_path)
         else:
             raise Exception(
                 "DigCNV model not defined!\nSaving the model impossible")
@@ -235,6 +246,8 @@ class DigCnvModel:
             cnvs["DigCNVpred"] = predictions
             if use_percentage:
                 predict_proba = self._model.predict_proba(split_cnvs)
+                cnvs["class_1"] = predict_proba[:, 1]
+                cnvs["class_0"] = predict_proba[:, 0]
                 digCNV_logger.logger.info(
                     "Classes probabilities added to CNV resutls")
                 digCNV_logger.logger.info(predict_proba)

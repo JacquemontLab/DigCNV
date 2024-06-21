@@ -3,7 +3,9 @@ digcnv/__pycache__/*
 outputs/*
 DigCNVenv/*
 dist/*
-DigCNV/DigCNV.egg-info/*
+digcnv/data/digcnv.egg-info/*
+digcnv/digcnv.egg-info/*
+digcnv.egg-info/*
 DigCNV/cnvision/__init__.py
 DigCNV/cnvision/__pycache__/*
 temp_data/*
