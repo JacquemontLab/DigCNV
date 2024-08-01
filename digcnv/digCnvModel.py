@@ -29,7 +29,7 @@ class DigCnvModel:
 
         self.bg_knn_params = {'n_estimators': 119,
                         'max_samples' :0.5,
-                        'base_estimator__n_neighbors':17}
+                        'estimator__n_neighbors':17}
 
         self.svm_params = {'C':18.8,
                     'gamma' : 'scale',
@@ -146,7 +146,7 @@ class DigCnvModel:
         if bg_knn_params is None:
             bg_knn_params = self.bg_knn_params
 
-        knn_clf = BaggingClassifier(base_estimator = KNeighborsClassifier(weights ="distance",
+        knn_clf = BaggingClassifier(estimator = KNeighborsClassifier(weights ="distance",
                                                                         n_neighbors = bg_knn_params["base_estimator__n_neighbors"]),
                                     bootstrap = True,
                                     bootstrap_features = True,
