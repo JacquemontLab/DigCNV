@@ -86,19 +86,19 @@ class DigCnvModel:
         :raises ValueError: If at least one of the dictonnary value is missing
         """
         mandatory_params = {"n_estimators", "max_samples",
-                            "base_estimator__n_neighbors"}
+                            "estimator__n_neighbors"}
         intersect = params.keys() & mandatory_params
         if len(intersect) < 3:
             raise ValueError(
-                "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
+                "Sorry at least of one the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._bg_knn_params = params
-        digCNV_logger.logger.info("Gradient Tree boosting hyperparameters set")
+        digCNV_logger.logger.info("Bagging of KNN hyperparameters set")
 
     @property
     def svm_params(self) -> dict:
-        """get the list of Ada boosting hyperparameters
+        """get the list of SVC hyperparameters
 
-        :return: dictionnary of Ada boosting hyperparameters
+        :return: dictionnary of SVC hyperparameters
         :rtype: dict
         """
         return self._svm_params
@@ -106,9 +106,9 @@ class DigCnvModel:
     # a setter function
     @svm_params.setter
     def svm_params(self, params: dict):
-        """set the list of Ada boosting hyperparameters
+        """set the list of SVC hyperparameters
 
-        :param params: dictionary containing Ada boosting hyperparameters to set
+        :param params: dictionary containing SVC hyperparameters to set
         :type params: dict
         :raises ValueError: If at least one of the dictonnary value is missing
         """
@@ -116,19 +116,19 @@ class DigCnvModel:
         intersect = params.keys() & mandatory_params
         if len(intersect) < 3:
             raise ValueError(
-                "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
+                "Sorry at least one of the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._svm_params = params
-        digCNV_logger.logger.info("Ada boosting hyperparameters set")
+        digCNV_logger.logger.info("SVC hyperparameters set")
 
     def createDigCnvClassifier(self, rf_params=None, bg_knn_params=None, svm_params=None) -> VotingClassifier:
-        """Create the DigCNV classifier based on three Classifiers, a Random forest, a Gradient Tree boosting and an Ada boosting classifiers.
+        """Create the DigCNV classifier based on three Classifiers, a Random forest, a bagging of KNN and SVC.
         You can set dictionnaries of hyperparameters for each machine learning model or used hyperparameters stored in object by letting arguments empty
 
         :param rf_params: dictionary containing Random forest hyperparameters to set, defaults to None
         :type rf_params: dict, optional
-        :param bg_knn_params: dictionary containing Gradient Tree boosting hyperparameters to set, defaults to None
+        :param bg_knn_params: dictionary containing Bagging of KNN hyperparameters to set, defaults to None
         :type bg_knn_params: dict, optional
-        :param svm_params: dictionary containing Ada boosting hyperparameters to set, defaults to None
+        :param svm_params: dictionary containing SVC hyperparameters to set, defaults to None
         :type svm_params: dict, optional
         :return: The DigCNV model created and ready for training.
         :rtype: VotingClassifier
@@ -147,7 +147,7 @@ class DigCnvModel:
             bg_knn_params = self.bg_knn_params
 
         knn_clf = BaggingClassifier(estimator = KNeighborsClassifier(weights ="distance",
-                                                                        n_neighbors = bg_knn_params["base_estimator__n_neighbors"]),
+                                                                        n_neighbors = bg_knn_params["estimator__n_neighbors"]),
                                     bootstrap = True,
                                     bootstrap_features = True,
                                     n_estimators = bg_knn_params["n_estimators"],
