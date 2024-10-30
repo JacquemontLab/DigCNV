@@ -20,20 +20,20 @@ class DigCnvModel:
     def __init__(self):
         """Creating the DigCNV instance and setting potential hyperparameters But no model is created you must create the classifier or load a pretrained model.
         """
-        self.rf_params  = {"n_estimators":148,
-                    "max_depth": 28,
-                    "min_samples_split": 2,
+        self.rf_params  = {"n_estimators":790,
+                    "max_depth": 352,
+                    "min_samples_split": 14,
                     "min_samples_leaf": 1,
-                    "max_leaf_nodes": 149,
+                    "max_leaf_nodes": 495,
                     "min_weight_fraction_leaf":0.0}
 
-        self.bg_knn_params = {'n_estimators': 119,
-                        'max_samples' :0.5,
-                        'estimator__n_neighbors':17}
+        self.bg_knn_params = {'n_estimators': 191,
+                        'max_samples' :0.35,
+                        'estimator__n_neighbors':1}
 
-        self.svm_params = {'C':18.8,
+        self.svm_params = {'C':49.8,
                     'gamma' : 'scale',
-                    'tol': 2e-05}
+                    'tol': 0.008858667904100823}
 
         self._model = None
         self._dimensions = []
@@ -240,6 +240,11 @@ class DigCnvModel:
         """        
         split_cnvs = cnvs.loc[:, self._dimensions]
         if self.checkIfDigCnvFitted():
+            
+            # Scale the data based on the training data
+            for col in split_cnvs.columns:
+                split_cnvs[col] = (split_cnvs[col] - self._dimensions_scales[col][0]) / self._dimensions_scales[col][1]
+
             predictions = self._model.predict(split_cnvs)
             digCNV_logger.logger.info(
                 "CNVs classes are now predicted by the model")
