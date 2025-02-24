@@ -23,7 +23,7 @@ def main():
 
     else:
         if len(sys.argv) == 3:
-            v = sys.argv[1]
+            v = sys.argv[2]
         else:
             v = False
         changeLoggingLevel(verbose=v)
@@ -38,7 +38,7 @@ def main():
         cnvs = dataPreparation.addDerivedFeatures(cnvs)
         dc_logger.info("CNVs dataframe shape = {}".format(cnvs.shape))
 
-        cnvs = dataPreparation.addChromosomicAnnotation(cnvs)
+        cnvs = dataPreparation.addChromosomicAnnotation(cnvs, parameters["centromeres"], parameters["seg_dups"])
         dc_logger.info("CNVs dataframe shape = {}".format(cnvs.shape))    
    
         cnvs = dataPreparation.transformTwoAlgsFeatures(cnvs)
@@ -51,14 +51,13 @@ def main():
     dataVerif.checkColumnsformats(cnvs, post_data_preparation=False)
     cnvs, cnvs_with_na = dataVerif.computeNaPercentage(cnvs, dimensions=model._dimensions, remove_na_data=True)
 
-    predicted_cnvs = model.predictCnvClasses(cnvs)
+    predicted_cnvs = model.predictCnvClasses(cnvs, use_percentage=parameters['output_prob'])
     cnvs_with_na["DigCNVpred"] = None
     predicted_cnvs = pd.concat([predicted_cnvs, cnvs_with_na])
 
     if parameters["save"]:
         predicted_cnvs.to_csv(parameters["output"], sep="\t")
         dc_logger.info("CNVs annotated and classified saved to = {}".format(parameters["output"]))    
-    return predicted_cnvs
 
 if __name__ == "__main__":
     main()

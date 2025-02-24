@@ -6,6 +6,7 @@ from sklearn import preprocessing
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, RocCurveDisplay
 import joblib
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 
@@ -245,17 +246,17 @@ class DigCnvModel:
             for col in split_cnvs.columns:
                 split_cnvs[col] = (split_cnvs[col] - self._dimensions_scales[col][0]) / self._dimensions_scales[col][1]
 
-            predictions = self._model.predict(split_cnvs)
+            predict_proba = self._model.predict_proba(split_cnvs)
             digCNV_logger.logger.info(
                 "CNVs classes are now predicted by the model")
-            cnvs["DigCNVpred"] = predictions
             if use_percentage:
-                predict_proba = self._model.predict_proba(split_cnvs)
                 cnvs["class_1"] = predict_proba[:, 1]
                 cnvs["class_0"] = predict_proba[:, 0]
                 digCNV_logger.logger.info(
                     "Classes probabilities added to CNV resutls")
                 digCNV_logger.logger.info(predict_proba)
+            predictions = np.where(predict_proba[:, 1] > 0.5, 1, 0)
+            cnvs["DigCNVpred"] = predictions
         else:
             raise Exception("DigCNV model not defined!")
         return cnvs

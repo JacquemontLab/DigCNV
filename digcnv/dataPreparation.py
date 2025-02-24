@@ -160,7 +160,7 @@ def getCentromereOverlap(cnvs: pd.DataFrame, centromeres_list_path: str) -> pd.D
 
     centromeres.rename(columns={
                        "CHR": "CHR_centro", "START": "START_centro", "STOP": "STOP_centro"}, inplace=True)
-    temp = pd.merge(cnvs, centromeres, left_on="CHR", right_on="CHR_centro")
+    temp = pd.merge(cnvs, centromeres, left_on="CHR", right_on="CHR_centro", how="left")
     overlap = (temp[["STOP_centro", "STOP"]].min(
         axis=1) - temp[["START_centro", "START"]].max(axis=1) + 1)/(temp.STOP - temp.START + 1)
     overlap = np.where(overlap > 0, overlap, 0)
@@ -188,14 +188,15 @@ def getSegDupOverlap(cnvs: pd.DataFrame, segdup_list_path: str) -> pd.DataFrame:
     complete_cnvs = pd.DataFrame()
 
     for chr in cnvs.CHR.unique():
-        cnvs_chr = cnvs[cnvs.CHR == chr].copy()
-        segdups_chr = segdups[segdups.CHR == chr].copy()
-        segdups_chr.reset_index(inplace=True)
-        vals = segdups_chr.apply(lambda x: computeOneOverlap(
-            cnvs_chr, x.START, x.STOP), axis=1)
-        overlaps = pd.DataFrame(vals.tolist())
-        cnvs_chr.loc[:, "overlapCNV_SegDup"] = overlaps.sum().tolist()
-        complete_cnvs = pd.concat([complete_cnvs, cnvs_chr])
+        if chr in segdups.CHR.unique():
+            cnvs_chr = cnvs[cnvs.CHR == chr].copy()
+            segdups_chr = segdups[segdups.CHR == chr].copy()
+            segdups_chr.reset_index(inplace=True)
+            vals = segdups_chr.apply(lambda x: computeOneOverlap(
+                cnvs_chr, x.START, x.STOP), axis=1)
+            overlaps = pd.DataFrame(vals.tolist())
+            cnvs_chr.loc[:, "overlapCNV_SegDup"] = overlaps.sum().tolist()
+            complete_cnvs = pd.concat([complete_cnvs, cnvs_chr])
     dc_logger.info("Segmental duplication overlap computed and CNVs annotated")
     return complete_cnvs
 
