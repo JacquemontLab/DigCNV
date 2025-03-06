@@ -47,17 +47,18 @@ def main():
         model = digCnvModel.DigCnvModel()
         model.openPreTrainedDigCnvModel(parameters["DigCnvModel"])
 
-    dataVerif.checkIfMandatoryColumnsExist(cnvs, post_data_preparation=True)
-    dataVerif.checkColumnsformats(cnvs, post_data_preparation=False)
-    cnvs, cnvs_with_na = dataVerif.computeNaPercentage(cnvs, dimensions=model._dimensions, remove_na_data=True)
+        dataVerif.checkIfMandatoryColumnsExist(cnvs, post_data_preparation=True)
+        dataVerif.checkColumnsformats(cnvs, post_data_preparation=False)
+        cnvs, cnvs_with_na = dataVerif.computeNaPercentage(cnvs, dimensions=model._dimensions, remove_na_data=True)
 
-    predicted_cnvs = model.predictCnvClasses(cnvs, use_percentage=parameters['output_prob'])
-    cnvs_with_na["DigCNVpred"] = None
-    predicted_cnvs = pd.concat([predicted_cnvs, cnvs_with_na])
+        print(cnvs.describe())
+        predicted_cnvs = model.predictCnvClasses(cnvs, use_percentage=parameters['output_prob'])
+        cnvs_with_na["DigCNVpred"] = None
+        predicted_cnvs = pd.concat([predicted_cnvs, cnvs_with_na])
 
-    if parameters["save"]:
-        predicted_cnvs.to_csv(parameters["output"], sep="\t")
-        dc_logger.info("CNVs annotated and classified saved to = {}".format(parameters["output"]))    
+        if parameters["save"]:
+            predicted_cnvs.to_csv(parameters["output"], sep="\t")
+            dc_logger.info("CNVs annotated and classified saved to = {}".format(parameters["output"]))    
 
 if __name__ == "__main__":
     main()

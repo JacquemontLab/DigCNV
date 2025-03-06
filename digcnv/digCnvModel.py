@@ -207,13 +207,17 @@ class DigCnvModel:
         """   
         scaler = preprocessing.StandardScaler()
         cols = training_data.columns
-        X_train_scale = pd.DataFrame(scaler.fit_transform(training_data, training_cat), columns=cols) 
+        X_train_scale = pd.DataFrame(scaler.fit_transform(training_data, training_cat), columns=cols)
+        digCNV_logger.logger.info(
+                "Predictor scaled for training")
         # for col in cols:
             # self._dimensions_scales[col] = [training_data[col].min(), training_data[col].max()]         
         for col in cols:
             self._dimensions_scales[col] = [training_data[col].mean(), training_data[col].std()] 
         self._dimensions = X_train_scale.columns.tolist()
         self._model.fit(X_train_scale, training_cat)
+        digCNV_logger.logger.info(
+                f"Model trained on the {X_train_scale.shape[0]} CNVs with {X_train_scale.shape[1]} features")
 
     def saveDigCnvModelToPkl(self, output_path: str):
         """Save a trained DigCNV model to a pkl file to be used later
