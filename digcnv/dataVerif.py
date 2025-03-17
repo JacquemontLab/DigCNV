@@ -76,51 +76,10 @@ def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None):
     plt.show()
 
 
-def checkIfMandatoryColumnsExist(cnvs: pd.DataFrame, post_data_preparation=True):
-    """Check if mandatory columns for classical DigCNV model exist. If not, will raise an Exception. 
-    To use only if you want to use pre-trained model.
-
-    :param cnvs: list of CNVs with their scores
-    :type cnvs: pd.DataFrame
-    :param post_data_preparation: Indicate if the given CNV dataframe was already modify to fit DigCNV model or if it's before the first steps, defaults to True
-    :type post_data_preparation: bool, optional
-    :raises Exception: If at least one madatory column is missing and will give which column is missing
-    """    
-    if post_data_preparation == False:
-        mandatory_columns = ['START', 'STOP',
-                             'CHR', 'SNP', 'SCORE', 'WF', 'TwoAlgs']
-    else:
-        mandatory_columns = ['Score_SNP', 'WF', 'TwoAlgs', 'overlapCNV_Centromere',
-                             'overlapCNV_SegDup', 'DENSITY']
-    if len(set(cnvs.columns.tolist()) & set(mandatory_columns)) != len(mandatory_columns):
-        missing_col = list(
-            set(mandatory_columns).difference(cnvs.columns.tolist()))
-        raise Exception("\nSome columns are mandatory: {}\n{} are missing".format(
-            mandatory_columns, missing_col))
-    else:
-        dc_logger.info("All mandatory columns exist in the given dataframe")
-
-
-def checkColumnsformats(cnvs: pd.DataFrame, post_data_preparation=True):
-    # TODO
-    if post_data_preparation == False:
-        int_columns = ['START', 'STOP', 'SNP']
-        if cnvs[int_columns].dtypes.unique() != int:
-            dc_logger.info("{} column must be integer".format(int_columns))
-    else:
-        int_columns = ['Nb_Probe_tech']
-        if cnvs[int_columns].dtypes.unique() != int:
-            dc_logger.info("{} column must be integer".format(int_columns))
-
-    float_columns = ['SCORE', 'LRR_mean', 'WF']
-    if cnvs[float_columns].dtypes.unique() != float:
-        dc_logger.info("{} column must be float".format(float_columns))
-
 
 def main():
     cnvs = pd.read_csv('../data/UKBB_clean_for_DigCNV.tsv',
                        sep='\t', index_col=False)
-    checkIfMandatoryColumnsExist(cnvs, False)
     print('ok')
 
 

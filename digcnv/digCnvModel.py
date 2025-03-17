@@ -265,6 +265,25 @@ class DigCnvModel:
             raise Exception("DigCNV model not defined!")
         return cnvs
 
+
+    def checkIfMandatoryColumnsExist(self, cnvs: pd.DataFrame, ):
+        """Check if mandatory columns for classical DigCNV model exist. If not, will raise an Exception. 
+        To use only if you want to use pre-trained model.
+
+        :param cnvs: list of CNVs with their scores
+        :type cnvs: pd.DataFrame
+        :raises Exception: If at least one madatory column is missing and will give which column is missing
+        """    
+        mandatory_columns = self._dimensions
+        if len(set(cnvs.columns.tolist()) & set(mandatory_columns)) != len(mandatory_columns):
+            missing_col = list(
+                set(mandatory_columns).difference(cnvs.columns.tolist()))
+            raise Exception("\nSome columns are mandatory: {}\n{} are missing".format(
+                mandatory_columns, missing_col))
+        else:
+            digCNV_logger.info("All mandatory columns exist in the given dataframe")
+
+
     def evaluateCnvClassification(self, testing_df: pd.DataFrame, expected_values: pd.Series, images_dir_path=None):
         """Evaluate a trained model with a list CNVs with already none classification.
 
