@@ -48,7 +48,7 @@ def computeNaPercentage(cnvs: pd.DataFrame, dimensions: list, remove_na_data=Tru
         return cnvs_clean, removed_cnvs
 
 
-def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None):
+def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None, plot_fig = True):
     """Plot the correlation heatmap for the given list of features of the CNV list
 
     :param cnvs: list of CNVs with their scores
@@ -73,7 +73,9 @@ def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None):
     ax.set_title("Correlation table of CNV features")
     if output_path != None:
         plt.savefig(output_path)
-    plt.show()
+    
+    if(plot_fig):
+        plt.show()
 
 
 def checkIfMandatoryColumnsExist(cnvs: pd.DataFrame, post_data_preparation=True):
