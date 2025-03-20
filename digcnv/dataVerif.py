@@ -57,6 +57,8 @@ def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None, p
     :type list_dim: list
     :param output_path: Pathway of the image could be a `PNG` or a `PDF` format, defaults to None
     :type output_path: str, optional
+    :param plot_fig: Option to disable plotting figure in interactive session
+    :type plot_fig: bool, optional
     """    
     data_clean = cnvs.loc[:, list_dim]
     cor_data = data_clean.corr()
