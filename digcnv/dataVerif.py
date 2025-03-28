@@ -48,7 +48,7 @@ def computeNaPercentage(cnvs: pd.DataFrame, dimensions: list, remove_na_data=Tru
         return cnvs_clean, removed_cnvs
 
 
-def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None):
+def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None, plot_fig = True):
     """Plot the correlation heatmap for the given list of features of the CNV list
 
     :param cnvs: list of CNVs with their scores
@@ -57,6 +57,8 @@ def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None):
     :type list_dim: list
     :param output_path: Pathway of the image could be a `PNG` or a `PDF` format, defaults to None
     :type output_path: str, optional
+    :param plot_fig: Option to disable plotting figure in interactive session
+    :type plot_fig: bool, optional
     """    
     data_clean = cnvs.loc[:, list_dim]
     cor_data = data_clean.corr()
@@ -73,7 +75,9 @@ def plotCorrelationHeatMap(cnvs:pd.DataFrame, list_dim:list, output_path=None):
     ax.set_title("Correlation table of CNV features")
     if output_path != None:
         plt.savefig(output_path)
-    plt.show()
+    
+    if(plot_fig):
+        plt.show()
 
 
 

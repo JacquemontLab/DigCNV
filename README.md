@@ -98,9 +98,9 @@ dataVerif.plotCorrelationHeatMap(cnvs, list_dim=model._dimensions, output_path="
 # and a second one with all CNVs with at least one missing data (can't be used for prediction)
 cnvs, cnvs_with_na = dataVerif.computeNaPercentage(cnvs, dimensions=model._dimensions, remove_na_data=True)
 
-# Discriminate true from false CNVs from CNVs with all data, then produce a list of classes
-predicted_cnvs = model.predictCnvClasses(cnvs)
-cnvs["DigCNVpred"] = predicted_cnvs
+# Discriminate true from false CNVs from CNVs with all data, then produce a list of classes and add column to original dataframe
+model.predictCnvClasses(cnvs)
+
 
 ```
 
