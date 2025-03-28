@@ -27,7 +27,7 @@ def addMicroArrayQualityData(cnvs: pd.DataFrame, data_path: str) -> pd.DataFrame
 def addDerivedFeatures(cnvs: pd.DataFrame) -> pd.DataFrame:
     """Compute and add 3 derived CNV scores 
 
-    :param cnvs: list of CNVs with at least 4 mandatory columns, (`SSTART`, `STOP`, `SNP`, `SCORE`) 
+    :param cnvs: list of CNVs with at least 4 mandatory columns, (`START`, `STOP`, `SNP`, `SCORE`) 
     :type cnvs: pd.DataFrame
     :return: same list of CNVs with 3 new column scores, (`SIZE`, `DENSITY`, `Score_SNP`)
     :rtype: pd.DataFrame
@@ -39,7 +39,7 @@ def addDerivedFeatures(cnvs: pd.DataFrame) -> pd.DataFrame:
     return cnvs
 
 
-def addCallRateToDataset(cnvs: pd.DataFrame, call_rate_path: str, callrate_colname="callRate", individual_colname="FID") -> pd.DataFrame:
+def addCallRateToDataset(cnvs: pd.DataFrame, call_rate_path: str, callrate_colname="callRate", individual_colname="SampleID") -> pd.DataFrame:
     """Add CallRate information to the given list of CNVs
 
     :param cnvs: list of CNVs with their scores
@@ -160,7 +160,7 @@ def getCentromereOverlap(cnvs: pd.DataFrame, centromeres_list_path: str) -> pd.D
 
     centromeres.rename(columns={
                        "CHR": "CHR_centro", "START": "START_centro", "STOP": "STOP_centro"}, inplace=True)
-    temp = pd.merge(cnvs, centromeres, left_on="CHR", right_on="CHR_centro")
+    temp = pd.merge(cnvs, centromeres, left_on="CHR", right_on="CHR_centro", how="left")
     overlap = (temp[["STOP_centro", "STOP"]].min(
         axis=1) - temp[["START_centro", "START"]].max(axis=1) + 1)/(temp.STOP - temp.START + 1)
     overlap = np.where(overlap > 0, overlap, 0)
@@ -188,19 +188,20 @@ def getSegDupOverlap(cnvs: pd.DataFrame, segdup_list_path: str) -> pd.DataFrame:
     complete_cnvs = pd.DataFrame()
 
     for chr in cnvs.CHR.unique():
-        cnvs_chr = cnvs[cnvs.CHR == chr].copy()
-        segdups_chr = segdups[segdups.CHR == chr].copy()
-        segdups_chr.reset_index(inplace=True)
-        vals = segdups_chr.apply(lambda x: computeOneOverlap(
-            cnvs_chr, x.START, x.STOP), axis=1)
-        overlaps = pd.DataFrame(vals.tolist())
-        cnvs_chr.loc[:, "overlapCNV_SegDup"] = overlaps.sum().tolist()
-        complete_cnvs = pd.concat([complete_cnvs, cnvs_chr])
+        if chr in segdups.CHR.unique():
+            cnvs_chr = cnvs[cnvs.CHR == chr].copy()
+            segdups_chr = segdups[segdups.CHR == chr].copy()
+            segdups_chr.reset_index(inplace=True)
+            vals = segdups_chr.apply(lambda x: computeOneOverlap(
+                cnvs_chr, x.START, x.STOP), axis=1)
+            overlaps = pd.DataFrame(vals.tolist())
+            cnvs_chr.loc[:, "overlapCNV_SegDup"] = overlaps.sum().tolist()
+            complete_cnvs = pd.concat([complete_cnvs, cnvs_chr])
     dc_logger.info("Segmental duplication overlap computed and CNVs annotated")
     return complete_cnvs
 
 
-def computeOneOverlap(cnvs:pd.DataFrame, START:int, STOP:int) -> np.ArrayLike:
+def computeOneOverlap(cnvs:pd.DataFrame, START:int, STOP:int):
     """Compute the percentage of overlap between a list of CNVs and START -- STOP coordinates of a given Segmental Duplication region. 
     Warning: CNVs must be on the same chromsome than the tested segmental duplication
 

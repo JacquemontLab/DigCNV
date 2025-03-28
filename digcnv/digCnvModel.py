@@ -1,10 +1,12 @@
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn import preprocessing
 
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, RocCurveDisplay
 import joblib
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 
@@ -19,23 +21,24 @@ class DigCnvModel:
     def __init__(self):
         """Creating the DigCNV instance and setting potential hyperparameters But no model is created you must create the classifier or load a pretrained model.
         """
-        self.rf_params  = {"n_estimators":148,
-                    "max_depth": 28,
-                    "min_samples_split": 2,
+        self.rf_params  = {"n_estimators":790,
+                    "max_depth": 352,
+                    "min_samples_split": 14,
                     "min_samples_leaf": 1,
-                    "max_leaf_nodes": 149,
+                    "max_leaf_nodes": 495,
                     "min_weight_fraction_leaf":0.0}
 
-        self.bg_knn_params = {'n_estimators': 119,
-                        'max_samples' :0.5,
-                        'base_estimator__n_neighbors':17}
+        self.bg_knn_params = {'n_estimators': 191,
+                        'max_samples' :0.35,
+                        'estimator__n_neighbors':1}
 
-        self.svm_params = {'C':18.8,
+        self.svm_params = {'C':49.8,
                     'gamma' : 'scale',
-                    'tol': 2e-05}
+                    'tol': 0.008858667904100823}
 
         self._model = None
         self._dimensions = []
+        self._dimensions_scales = {}
         digCNV_logger.logger.info("Empty DigCNV model created")
 
     @property
@@ -84,19 +87,19 @@ class DigCnvModel:
         :raises ValueError: If at least one of the dictonnary value is missing
         """
         mandatory_params = {"n_estimators", "max_samples",
-                            "base_estimator__n_neighbors"}
+                            "estimator__n_neighbors"}
         intersect = params.keys() & mandatory_params
         if len(intersect) < 3:
             raise ValueError(
-                "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
+                "Sorry at least of one the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._bg_knn_params = params
-        digCNV_logger.logger.info("Gradient Tree boosting hyperparameters set")
+        digCNV_logger.logger.info("Bagging of KNN hyperparameters set")
 
     @property
     def svm_params(self) -> dict:
-        """get the list of Ada boosting hyperparameters
+        """get the list of SVC hyperparameters
 
-        :return: dictionnary of Ada boosting hyperparameters
+        :return: dictionnary of SVC hyperparameters
         :rtype: dict
         """
         return self._svm_params
@@ -104,9 +107,9 @@ class DigCnvModel:
     # a setter function
     @svm_params.setter
     def svm_params(self, params: dict):
-        """set the list of Ada boosting hyperparameters
+        """set the list of SVC hyperparameters
 
-        :param params: dictionary containing Ada boosting hyperparameters to set
+        :param params: dictionary containing SVC hyperparameters to set
         :type params: dict
         :raises ValueError: If at least one of the dictonnary value is missing
         """
@@ -114,19 +117,19 @@ class DigCnvModel:
         intersect = params.keys() & mandatory_params
         if len(intersect) < 3:
             raise ValueError(
-                "Sorry at least of the mandatory hyperparameter is missing: {}".format(mandatory_params))
+                "Sorry at least one of the mandatory hyperparameter is missing: {}".format(mandatory_params))
         self._svm_params = params
-        digCNV_logger.logger.info("Ada boosting hyperparameters set")
+        digCNV_logger.logger.info("SVC hyperparameters set")
 
     def createDigCnvClassifier(self, rf_params=None, bg_knn_params=None, svm_params=None) -> VotingClassifier:
-        """Create the DigCNV classifier based on three Classifiers, a Random forest, a Gradient Tree boosting and an Ada boosting classifiers.
+        """Create the DigCNV classifier based on three Classifiers, a Random forest, a bagging of KNN and SVC.
         You can set dictionnaries of hyperparameters for each machine learning model or used hyperparameters stored in object by letting arguments empty
 
         :param rf_params: dictionary containing Random forest hyperparameters to set, defaults to None
         :type rf_params: dict, optional
-        :param bg_knn_params: dictionary containing Gradient Tree boosting hyperparameters to set, defaults to None
+        :param bg_knn_params: dictionary containing Bagging of KNN hyperparameters to set, defaults to None
         :type bg_knn_params: dict, optional
-        :param svm_params: dictionary containing Ada boosting hyperparameters to set, defaults to None
+        :param svm_params: dictionary containing SVC hyperparameters to set, defaults to None
         :type svm_params: dict, optional
         :return: The DigCNV model created and ready for training.
         :rtype: VotingClassifier
@@ -144,8 +147,8 @@ class DigCnvModel:
         if bg_knn_params is None:
             bg_knn_params = self.bg_knn_params
 
-        knn_clf = BaggingClassifier(base_estimator = KNeighborsClassifier(weights ="distance",
-                                                                        n_neighbors = bg_knn_params["base_estimator__n_neighbors"]),
+        knn_clf = BaggingClassifier(estimator = KNeighborsClassifier(weights ="distance",
+                                                                        n_neighbors = bg_knn_params["estimator__n_neighbors"]),
                                     bootstrap = True,
                                     bootstrap_features = True,
                                     n_estimators = bg_knn_params["n_estimators"],
@@ -178,9 +181,11 @@ class DigCnvModel:
                 "Pre trained model loaded from {}".format(model_path))
             if len(w) > 0:
                 digCNV_logger.logger.info("Version Warning: {}".format(w[0]))
-            self._dimensions = dimensions
+
+            self._dimensions = list(dimensions.keys())
+            self._dimensions_scales = dimensions
             digCNV_logger.logger.info(
-                "Pre trained model will use {} as predictors".format(dimensions))
+                "Pre trained model will use {} as predictors".format(dimensions.keys()))
             self._model = model
 
     def checkIfDigCnvFitted(self) -> bool:
@@ -199,9 +204,20 @@ class DigCnvModel:
         :type training_data: pd.DataFrame
         :param training_cat: A list of binary annotation for CNVs indicating if each CNV is a True CNV or an artefact, must int values.
         :type training_cat: pd.Series
-        """        
-        self._dimensions = training_data.columns.tolist()
-        self._model.fit(training_data, training_cat)
+        """   
+        scaler = preprocessing.StandardScaler()
+        cols = training_data.columns
+        X_train_scale = pd.DataFrame(scaler.fit_transform(training_data, training_cat), columns=cols)
+        digCNV_logger.logger.info(
+                "Predictor scaled for training")
+        # for col in cols:
+            # self._dimensions_scales[col] = [training_data[col].min(), training_data[col].max()]         
+        for col in cols:
+            self._dimensions_scales[col] = [training_data[col].mean(), training_data[col].std()] 
+        self._dimensions = X_train_scale.columns.tolist()
+        self._model.fit(X_train_scale, training_cat)
+        digCNV_logger.logger.info(
+                f"Model trained on the {X_train_scale.shape[0]} CNVs with {X_train_scale.shape[1]} features")
 
     def saveDigCnvModelToPkl(self, output_path: str):
         """Save a trained DigCNV model to a pkl file to be used later
@@ -211,7 +227,7 @@ class DigCnvModel:
         :raises Exception: if the model isn't trained 
         """        
         if self.checkIfDigCnvFitted():
-            joblib.dump([self._dimensions, self._model], output_path)
+            joblib.dump([self._dimensions_scales, self._model], output_path)
         else:
             raise Exception(
                 "DigCNV model not defined!\nSaving the model impossible")
@@ -229,18 +245,44 @@ class DigCnvModel:
         """        
         split_cnvs = cnvs.loc[:, self._dimensions]
         if self.checkIfDigCnvFitted():
-            predictions = self._model.predict(split_cnvs)
+            
+            # Scale the data based on the training data
+            for col in split_cnvs.columns:
+                split_cnvs[col] = (split_cnvs[col] - self._dimensions_scales[col][0]) / self._dimensions_scales[col][1]
+
+            predict_proba = self._model.predict_proba(split_cnvs)
             digCNV_logger.logger.info(
                 "CNVs classes are now predicted by the model")
-            cnvs["DigCNVpred"] = predictions
             if use_percentage:
-                predict_proba = self._model.predict_proba(split_cnvs)
+                cnvs["class_1"] = predict_proba[:, 1]
+                cnvs["class_0"] = predict_proba[:, 0]
                 digCNV_logger.logger.info(
                     "Classes probabilities added to CNV resutls")
                 digCNV_logger.logger.info(predict_proba)
+            predictions = np.where(predict_proba[:, 1] > 0.5, 1, 0)
+            cnvs["DigCNVpred"] = predictions
         else:
             raise Exception("DigCNV model not defined!")
         return cnvs
+
+
+    def checkIfMandatoryColumnsExist(self, cnvs: pd.DataFrame, ):
+        """Check if mandatory columns for classical DigCNV model exist. If not, will raise an Exception. 
+        To use only if you want to use pre-trained model.
+
+        :param cnvs: list of CNVs with their scores
+        :type cnvs: pd.DataFrame
+        :raises Exception: If at least one madatory column is missing and will give which column is missing
+        """    
+        mandatory_columns = self._dimensions
+        if len(set(cnvs.columns.tolist()) & set(mandatory_columns)) != len(mandatory_columns):
+            missing_col = list(
+                set(mandatory_columns).difference(cnvs.columns.tolist()))
+            raise Exception("\nSome columns are mandatory: {}\n{} are missing".format(
+                mandatory_columns, missing_col))
+        else:
+            digCNV_logger.info("All mandatory columns exist in the given dataframe")
+
 
     def evaluateCnvClassification(self, testing_df: pd.DataFrame, expected_values: pd.Series, images_dir_path=None):
         """Evaluate a trained model with a list CNVs with already none classification.

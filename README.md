@@ -1,5 +1,5 @@
 # DigCNV
-![DigCNV logo](http... "DigCNV")
+![DigCNV logo](https://github.com/RudolphDev/DigCNV/blob/main/images/DigCNV_logo.png "DigCNV")
 
 ![PyPI - License](https://img.shields.io/pypi/l/DigCNV?color=gree)
 [![PyPI](https://img.shields.io/pypi/v/digcnv)](https://badge.fury.io/py/digcnv)
@@ -23,9 +23,7 @@ This model have AUC > 90% for most technologies (already trained-on or  new tech
 - a second approach line by line to train and test our machine learning model on your own visualized dataset and performe some statistics. 
 
 ## DigCNV models
-- Model presented in IAMDRS congress available at: https://murena.io/s/xEsyae6gxfMEnWJ
-- Most up-to-date model available at https://murena.io/s/xEsyae6gxfMEnWJ
-
+- Most up-to-date model available at **TBD**
 ## Classify CNVs with one line
 
 ``` sh
@@ -69,19 +67,15 @@ cnvs = dataPreparation.addMicroArrayQualityData(cnvs, "<path to the PennCNV micr
 # Compute derived features and add it to the CNV list
 cnvs = dataPreparation.addDerivedFeatures(cnvs)
 
-# Add CallRate data to CNV list
-cnvs = dataPreparation.addCallRateToDataset(cnvs, call_rate_path="<Pathway to the callrate file>", callrate_colname="<CallRate column name>", individual_colname="<Individual column name>")
-
 # Add Chromosomic information such as centromere and Segmental Duplications overlap
-cnvs = dataPreparation.addChromosomicAnnotation(cnvs)
+cnvs = dataPreparation.addChromosomicAnnotation(cnvs, parameters["centromeres"], parameters["seg_dups"])
 
-# Add number of probes used with the technology (Useful for model trained on multiple datasets and multiple technologies)   
-cnvs = dataPreparation.addNbProbeByTech(cnvs, pfb_file_path="<Pathway to the PFB file>")
+cnvs = dataPreparation.transformTwoAlgsFeatures(cnvs)
  
-
 ```
+
 #### Run DigCNV from the pre-trained model
-More information at *"article"*
+More information in *"article--WIP"*
 
 ```python
 from digcnv import digCnvModel, dataVerif
@@ -90,7 +84,7 @@ from digcnv import digCnvModel, dataVerif
 model = digCnvModel.DigCnvModel()
 
 # Open pre-trained model and update object
-model_path = join(split(__file__)[0], 'data', 'DigCNV_model_multiple_technos.pkl')
+model_path = '<Path of the trained DigCNV model in pkl>'
 model.openPreTrainedDigCnvModel(model_path)
 
 # Check if mandatory columns for the DigCNV model exist and have right formats
@@ -104,16 +98,16 @@ dataVerif.plotCorrelationHeatMap(cnvs, list_dim=model._dimensions, output_path="
 # and a second one with all CNVs with at least one missing data (can't be used for prediction)
 cnvs, cnvs_with_na = dataVerif.computeNaPercentage(cnvs, dimensions=model._dimensions, remove_na_data=True)
 
-# Discriminate true from false CNVs from CNVs with all data, then produce a list of classes
-predicted_cnvs = model.predictCnvClasses(cnvs)
-cnvs["DigCNVpred"] = predicted_cnvs
+# Discriminate true from false CNVs from CNVs with all data, then produce a list of classes and add column to original dataframe
+model.predictCnvClasses(cnvs)
+
 
 ```
 
 #### Train your own DigCNV model
 
 ```python
-from digcnv import digCNVModel
+from digcnv import digCnvModel
 # Uses CNVs created in Prepare data section :
 
 # Add your own annotation to your CNVs (0 for false CNVs and 1 for true)
@@ -125,10 +119,11 @@ predictors = ["",""]
 
 
 # Remove CNVs with at least one missing values in used predictors or in visualized column
-cnvs, removed = DigCnvPreProcessing.removeLinesWithNA(cnvs, dimensions=predictors + ["visualized_class"])
+cnvs, removed = dataVerif.computeNaPercentage(data, dimensions=predictors + ["visualized_class"], remove_na_data=True)
 
-# Split dataset into two groups a training dataset and a testing dataset (70% - 30%)  
-X_train, y_train, X_test, y_test = DigCnvPreProcessing.createTrainingTestingDatasets(cnvs, X_dimension="visualized_class")
+
+# Split dataset into two groups a training dataset and a testing dataset (70% - 30%)
+X_train, y_train, X_test, y_test = DigCnvPreProcessing.createTrainingTestingDatasets(cnvs, dimensions=predictors, X_dimension="visualized_class")
 
 # If ratio between the two classes is too unbalanced uniformize classes by split majoritary class and adding new pseudo CNVs to minority class
 X_train, y_train = DigCnvPreProcessing.uniformizeClassesSizes(X_train, y_train, 17, 0.4, 0.5)
@@ -140,15 +135,10 @@ model.createDigCnvClassifier()
 # Train the DigCNV model with the given training dataset
 model.trainDigCnvModel(training_data=X_train, training_cat=y_train)
 
-# Analyse classification accuracy for the trained model
-predicted_cnvs = model.evaluateCnvClassification(testing_df=X_test, expected_values=y_test, images_dir_path="<Path to the image output directory>")
+# Save the trained model into the specified path
+model.saveDigCnvModelToPkl("<output_path>")
 ```
 
-#### Tune DigCNV hyperparameters
-
-```python
-from digcnv import DigCNVTunning
-```
 
 ## Input files format example
 #### PennCNV output

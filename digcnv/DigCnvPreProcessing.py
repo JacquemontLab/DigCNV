@@ -54,7 +54,7 @@ def uniformizeClassesSizes(X_train:pd.DataFrame, y_train:pd.Series, k_neighbors:
     :rtype: tuple[pd.DataFrame, pd.Series]
     """    
     digCNV_logger.logger.info("\nTraining dataset classes\n{}".format(y_train.value_counts()))
-    over = SMOTE(sampling_strategy=over_sampling, k_neighbors = k_neighbors, n_jobs=-1, random_state=42)
+    over = SMOTE(sampling_strategy=over_sampling, k_neighbors = k_neighbors, random_state=42)
     under = RandomUnderSampler(sampling_strategy=under_sampling, random_state=42)
     steps = [('o', over), ('u', under)]
     pipeline = Pipeline(steps=steps)
