@@ -249,17 +249,20 @@ class DigCnvModel:
             # Scale the data based on the training data
             for col in split_cnvs.columns:
                 split_cnvs[col] = (split_cnvs[col] - self._dimensions_scales[col][0]) / self._dimensions_scales[col][1]
-
-            predict_proba = self._model.predict_proba(split_cnvs)
-            digCNV_logger.logger.info(
-                "CNVs classes are now predicted by the model")
+                
             if use_percentage:
+                predict_proba = self._model.predict_proba(split_cnvs)
+                digCNV_logger.logger.info(
+                    "CNVs classes are now predicted by the model")
+            
                 cnvs["class_1"] = predict_proba[:, 1]
                 cnvs["class_0"] = predict_proba[:, 0]
                 digCNV_logger.logger.info(
                     "Classes probabilities added to CNV resutls")
                 digCNV_logger.logger.info(predict_proba)
-            predictions = np.where(predict_proba[:, 1] > 0.5, 1, 0)
+                predictions = np.where(predict_proba[:, 1] > 0.5, 1, 0)
+            else:
+                predictions = self._model.predict(split_cnvs)
             cnvs["DigCNVpred"] = predictions
         else:
             raise Exception("DigCNV model not defined!")
